@@ -4,6 +4,8 @@ import { UsersService } from './users.service';
 import { Users } from './users.models';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles-auth.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 
 @ApiTags('Пользователи') // @ApiTags Декоратор для эндпойнта в документации swagger
 @Controller('users')
@@ -19,7 +21,8 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Получение всех пользователей' }) // Декораторы для документации в Swagger
   @ApiResponse({ status: 200, type: [Users] })
-  @UseGuards(JwtAuthGuard) // Использование гуарда
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
   @Get()
   getAll(): Promise<Users[]> {
     return this.usersService.getAllUsers();
