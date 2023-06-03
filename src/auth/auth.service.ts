@@ -8,7 +8,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { Users } from '../users/users.models';
+import { Users as User } from '../users/users.models';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +16,7 @@ export class AuthService {
     private userService: UsersService,
     private jwtService: JwtService,
   ) {}
+
   async login(userDto: CreateUserDto) {
     const user = await this.validateUser(userDto);
     return this.generateToken(user);
@@ -25,7 +26,7 @@ export class AuthService {
     const candidate = await this.userService.getUserByEmail(userDto.email);
     if (candidate) {
       throw new HttpException(
-        'Пользователь с таким email уже существует',
+        'Пользователь с таким email существует',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -37,12 +38,8 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  private async generateToken(user: Users) {
-    const payload = {
-      email: user.email,
-      id: user.id,
-      roles: user.roles,
-    };
+  private async generateToken(user: User) {
+    const payload = { email: user.email, id: user.id, roles: user.roles };
     return {
       token: this.jwtService.sign(payload),
     };
@@ -50,12 +47,12 @@ export class AuthService {
 
   private async validateUser(userDto: CreateUserDto) {
     const user = await this.userService.getUserByEmail(userDto.email);
-    const passwordEquals = bcrypt.compare(userDto.password, user.password);
+    const passwordEquals = await bcrypt.compare(userDto.password, user.password);
     if (user && passwordEquals) {
       return user;
     }
     throw new UnauthorizedException({
-      message: 'Некорректный email или пароль',
+      message: 'Некорректный емайл или пароль',
     });
   }
 }
