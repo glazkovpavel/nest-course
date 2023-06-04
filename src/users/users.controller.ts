@@ -6,6 +6,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles-auth.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { AddRoleDto } from './dto/add-role.dto';
+import { BanUserDto } from './dto/ban-user.dto';
 
 @ApiTags('Пользователи') // @ApiTags Декоратор для эндпойнта в документации swagger
 @Controller('users')
@@ -26,5 +28,23 @@ export class UsersController {
   @Get()
   getAll(): Promise<Users[]> {
     return this.usersService.getAllUsers();
+  }
+
+  @ApiOperation({ summary: 'Выдать роль' }) // Декораторы для документации в Swagger
+  @ApiResponse({ status: 200 })
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
+  @Post('/role')
+  addRole(@Body() dto: AddRoleDto): Promise<AddRoleDto> {
+    return this.usersService.addRole(dto);
+  }
+
+  @ApiOperation({ summary: 'Забанить пользователя' }) // Декораторы для документации в Swagger
+  @ApiResponse({ status: 200 })
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
+  @Post('/ban')
+  ban(@Body() dto: BanUserDto): Promise<Users> {
+    return this.usersService.ban(dto);
   }
 }
