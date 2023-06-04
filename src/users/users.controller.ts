@@ -1,9 +1,8 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, UsePipes } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
-import { Users } from './users.models';
+import { User } from './users.models';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles-auth.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { AddRoleDto } from './dto/add-role.dto';
@@ -15,18 +14,18 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @ApiOperation({ summary: 'Создание пользователя' }) // Декораторы для документации в Swagger
-  @ApiResponse({ status: 200, type: Users })
+  @ApiResponse({ status: 200, type: User })
   @Post()
-  create(@Body() userDto: CreateUserDto): Promise<Users> {
+  create(@Body() userDto: CreateUserDto): Promise<User> {
     return this.usersService.createUser(userDto);
   }
 
   @ApiOperation({ summary: 'Получение всех пользователей' }) // Декораторы для документации в Swagger
-  @ApiResponse({ status: 200, type: [Users] })
+  @ApiResponse({ status: 200, type: [User] })
   @Roles('ADMIN')
   @UseGuards(RolesGuard)
   @Get()
-  getAll(): Promise<Users[]> {
+  getAll(): Promise<User[]> {
     return this.usersService.getAllUsers();
   }
 
@@ -44,7 +43,7 @@ export class UsersController {
   @Roles('ADMIN')
   @UseGuards(RolesGuard)
   @Post('/ban')
-  ban(@Body() dto: BanUserDto): Promise<Users> {
+  ban(@Body() dto: BanUserDto): Promise<User> {
     return this.usersService.ban(dto);
   }
 }

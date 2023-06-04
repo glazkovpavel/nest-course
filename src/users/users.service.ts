@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Users } from './users.models';
+import { User } from './users.models';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RolesService } from '../roles/roles.service';
 import { Role } from '../roles/roles.models';
@@ -10,20 +10,20 @@ import { BanUserDto } from './dto/ban-user.dto';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(Users) private usersRepository: typeof Users,
+    @InjectModel(User) private usersRepository: typeof User,
     private roleService: RolesService,
   ) {}
 
-  async createUser(dto: CreateUserDto): Promise<Users> {
-    const user: Users = await this.usersRepository.create(dto);
+  async createUser(dto: CreateUserDto): Promise<User> {
+    const user: User = await this.usersRepository.create(dto);
     const role: Role = await this.roleService.getRoleByValue('USER');
     await user.$set('roles', [role.id]);
     user.roles = [role];
     return user;
   }
 
-  async getAllUsers(): Promise<Users[]> {
-    const users: Promise<Users[]> = this.usersRepository.findAll({
+  async getAllUsers(): Promise<User[]> {
+    const users: Promise<User[]> = this.usersRepository.findAll({
       include: { all: true },
     });
     return users;
@@ -38,7 +38,7 @@ export class UsersService {
   }
 
   async addRole(dto: AddRoleDto) {
-    const user: Users = await this.usersRepository.findByPk(dto.userId);
+    const user: User = await this.usersRepository.findByPk(dto.userId);
     const role: Role = await this.roleService.getRoleByValue(dto.value);
 
     if (role && user) {
@@ -52,12 +52,9 @@ export class UsersService {
   }
 
   async ban(dto: BanUserDto) {
-    const user: Users = await this.usersRepository.findByPk(dto.userId);
+    const user: User = await this.usersRepository.findByPk(dto.userId);
     if (!user) {
-      throw new HttpException(
-        'Пользователь не найден',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
     user.banned = true;
     user.banReason = dto.banReason;
